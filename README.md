@@ -126,8 +126,6 @@ class TimeLagLoss(nn.Module):
         return lag_loss + self.alpha * mean_loss
 ```
 
-> **Drop‑in replacement** for `nn.MSELoss` / `nn.L1Loss`.
-
 ---
 
 ## 4 Result Reproduction
