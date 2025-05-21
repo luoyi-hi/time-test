@@ -41,27 +41,28 @@ Pre-processed data can be downloaded from **[Google Drive](https://drive.google.
 
 ### 2.1 Backbone Models  
 
-We benchmark LagLoss on ten representative forecasting models:
+We have selected ten representative backbone regarding time series forecasting models, encompassing diverse design principles and perspectives:
 
-- **iTransformer** — variable-wise attention with shared parameters  
-- **PatchTST** — patchifying time series as Transformer tokens  
-- **NSTransformer** — stationarisation & de‑stationary attention  
-- **Autoformer** — series decomposition & self-correlation  
-- **SOFTS** — STAR module with centralised mixing strategy  
-- **Leddam** — learnable decomposition + dual attention  
-- **TimeMixer** — pure-MLP past/future mixers  
-- **DLinear** — linear trend–residual decomposition  
-- **TSMixer** — stacked MLP mixing along time & feature axes  
-- **LightTS** — distilled lightweight ensemble
+- **iTransformer**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
+- **PatchTST**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
+- **NSTransformer**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
+- **Autoformer**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
+- **SOFTS**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
+- **Leddam**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
+- **TimeMixer**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
+- **DLinear**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
+- **TSMixer**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
+- **LightTS**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
 
 ### 2.2 Hyper‑parameters  
 
-Full training hyper‑parameters for every (model, dataset) pair are provided in **Table&nbsp;2**.
+Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
+
+##### Table 2: Hyperparameter configuration.
 
 <p align="center">
   <img src="./src/table2.png" width="800">
 </p>
-
 
 <p align="center">
   <img src="./src/table22.png" width="800">
@@ -69,7 +70,6 @@ Full training hyper‑parameters for every (model, dataset) pair are provided in
 
 ### 2.3 Loss Function
 For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign, and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
-
 **Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework<sup>1</sup>. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over $\alpha \in \{0.25, 0.5, 0.75, 1\}$, and for PS Loss, over $\alpha \in \{1, 3, 5, 10\}$. For LagLoss, we search over $\alpha \in \{0, 0.01, 0.05, 0.1, 0.15, 0.2\}$, with one exception for PatchTST, where the search range is extended to include $\{0.3, 0.5, 1\}$.
 
 
