@@ -2,20 +2,19 @@
 
 Our model implementation and datasets are derived from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library).We conducted over 1,440 experiments using a total of 10 models, 6 loss functions, and 6 datasets.
 
-![Figure 1](./src/figure1.png)
-<p align="center"><b>Figure&nbsp;2</b> The workflow of LagLoss. For the groundtruth side, lag selection is performed first, and the lag candidates are shared with the prediction side. Then, lag-specific differences are calculated separately on both the groundtruth and prediction sides. Finally, the loss is computed by combining the results from both sides.</p>
-
 **Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
+![Figure 1](./src/figure1.png)
+<p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss. For the groundtruth side, lag selection is performed first, and the lag candidates are shared with the prediction side. Then, lag-specific differences are calculated separately on both the groundtruth and prediction sides. Finally, the loss is computed by combining the results from both sides.</p>
 
-
-（先放模型图）
-（开头说明基于什么库实现的代码，介绍多少个模型，多少个损失函数，简单描述一下下图）
+The workflow of time lag loss is shown as Figure 1, primarily involving differencing sequences of ground-truth and prediction, calculating the mean regularization term, selecting lag candidates, and determining lag-specific differences.
 
 ![Figure 2](./src/figure2.png)
 
 
-<p align="center"><b>Figure&nbsp;1</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
+<p align="center"><b>Figure&nbsp;2</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
+
+Figure 2 Radar chart comparing the MSE performance of 10 state-of-the-art time series forecasting models across 7 different loss functions. Each line represents a distinct loss function (e.g., MSE, MAE, TILDE-Q, etc.), including our proposed LagLoss (in red). The chart shows that models guided by LagLoss consistently achieve lower MSE values across the majority of models
 
 ---
 
