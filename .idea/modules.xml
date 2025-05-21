@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Time-Series-Library-main.iml" filepath="$PROJECT_DIR$/.idea/Time-Series-Library-main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/TimeLagLoss.iml" filepath="$PROJECT_DIR$/.idea/TimeLagLoss.iml" />
     </modules>
   </component>
 </project>
