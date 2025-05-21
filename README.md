@@ -145,7 +145,7 @@ pip install -r requirements.txt
 
 ### 4.2 Training & Evaluation  
 
-Example scripts (full list in `./scripts/`): (对每个方法弄示例，超参范围标注)，前面提一下实验数量，cy那个特例单独说一下
+Example scripts (full list in `./scripts/`): (对每个方法弄示例，超参范围标注,cyc那个单独说明)
 
 ```bash
 # iTransformer on ETTh1, horizon 96
