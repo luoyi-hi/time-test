@@ -68,6 +68,11 @@ Full training hyper‑parameters for every (model, dataset) pair are provided in
   <img src="./src/table22.png" width="800">
 </p>
 
+### 2.3 Loss Function
+For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign, and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
+
+**Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework<sup>1</sup>. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over $\alpha \in \{0.25, 0.5, 0.75, 1\}$, and for PS Loss, over $\alpha \in \{1, 3, 5, 10\}$. For LagLoss, we search over $\alpha \in \{0, 0.01, 0.05, 0.1, 0.15, 0.2\}$, with one exception for PatchTST, where the search range is extended to include $\{0.3, 0.5, 1\}$.
+
 
 ---
 
