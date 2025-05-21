@@ -11,11 +11,11 @@
 
 ---
 
-## 1 Datasets
+## 1. Datasets
 
 ### 1.1 Sources  
 
-Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`..
+Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`.
 we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
 - **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
@@ -34,7 +34,7 @@ Dataset statistics are summarised in **Table&nbsp;1**.
 
 ---
 
-## 2 Experimental Setting
+## 2. Experimental Setting
 
 ### 2.1 Backbone Models  
 
@@ -72,7 +72,7 @@ For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, 
 
 ---
 
-## 3 Plug‑and‑Play PyTorch Implementation
+## 3. Plug‑and‑Play PyTorch Implementation
 
 ```python
 class TimeLagLoss(nn.Module):
@@ -128,7 +128,7 @@ class TimeLagLoss(nn.Module):
 
 ---
 
-## 4 Result Reproduction
+## 4. Result Reproduction
 
 Code is based on Time Series Library (TSLib), and the datasets are also obtained from this library: https://github.com/thuml/Time-Series-Library
 
