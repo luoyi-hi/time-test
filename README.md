@@ -1,6 +1,6 @@
 # TimeLagLoss
 
-**Time Lag Loss (LagLoss)** is a novel objective function designed to enforce autocorrelation consistency between predictions and ground truth over multiple lag intervals. It achieves this by computing a set of lag-specific deviations, which are then used to guide the model's learning process, ensuring that temporal dependencies are accurately captured.
+**Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
 <p align="center">
   <img src="./src/figure1.png" width="600">
