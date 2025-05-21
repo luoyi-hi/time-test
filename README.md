@@ -15,13 +15,12 @@
 
 ### 1.1 Sources  
 
-All six datasets are taken from the public repository **[Time-Test](https://github.com/luoyi-hi/time-test)** and ultimately derived from the widely-used **[TSLib](https://github.com/thuml/Time-Series-Library)**.
+All six datasets are taken from the public repository **[Time-Test](https://github.com/luoyi-hi/time-test)**.
+we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
-| Corpus                               | Description                                                        | Span / Freq.               |
-| :----------------------------------- | :----------------------------------------------------------------- | :------------------------- |
-| **ETT** (ETTh1, ETTh2, ETTm1, ETTm2) | Transformer temperature & power-load data from two Chinese regions | 2016 – 2018 · 1 h / 15 min |
-| **Weather**                          | 21 meteorological indicators across Germany                        | 2020 · 10 min              |
-| **Electricity**                      | Hourly electricity consumption of 321 clients (UCI ML Repository)  | 2012 – 2014 · 1 h          |
+- **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
+- **Weather**: This dataset captures 21 different meteorological indicators across Germany, recorded every 10 minutes throughout the year 2020. Key indicators include temperature, visibility, and other parameters, providing a comprehensive view of weather dynamics.
+- **Electricity**: This dataset contains hourly electricity consumption records for 321 clients, measured in kilowatt-hours (kWh). Sourced from the UCI Machine Learning Repository, it covers the period from 2012 to 2014, offering valuable insights into consumer electricity usage patterns.
 
 ### 1.2 Statistics  
 
@@ -135,6 +134,8 @@ class TimeLagLoss(nn.Module):
 ---
 
 ## 4 Result Reproduction
+
+Code is based on Time Series Library (TSLib), and the datasets are also obtained from this library: https://github.com/thuml/Time-Series-Library
 
 ### 4.1 Environment  
 
