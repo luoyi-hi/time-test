@@ -92,6 +92,7 @@ we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, 
 Dataset statistics are summarised in **Table&nbsp;1**.
 
 <p align="center"><b>Table&nbsp;1</b> Statistics of datasets.</p>
+
 ![Table 1](./src/table1.png)
 
 ### 2.2 Backbone Models  
@@ -117,6 +118,7 @@ For detailed parameter settings, please refer to the script files in the `script
 
 
 <p align="center"><b>Table&nbsp;2</b> Hyperparameter configuration.</p>
+
 ![Table 2](./src/table2.png)
 ![Table 22](./src/table22.png)
 
