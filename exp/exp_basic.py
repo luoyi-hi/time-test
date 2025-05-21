@@ -1,38 +1,21 @@
 import os
 import torch
-from models import Autoformer, TimesNet, DLinear, FEDformer, PatchTST, iTransformer, TimeMixer, TimeKAN, SOFTS, \
-    SparseTSF, WPMixer, TimeXer, TSMixer, FiLM, LightTS, MICN, TiDE, SCINet, Nonstationary_Transformer, Leddam, \
-    CATS, SegRNN, Informer, MambaSimple
+from models import Autoformer, DLinear, PatchTST, iTransformer, TimeMixer, SOFTS, LightTS, Nonstationary_Transformer, Leddam
 
 
 class Exp_Basic(object):
     def __init__(self, args):
         self.args = args
         self.model_dict = {
-            'TimesNet': TimesNet,
             'Autoformer': Autoformer,
             'DLinear': DLinear,
-            'FEDformer': FEDformer,
             'PatchTST': PatchTST,
             'iTransformer': iTransformer,
             'TimeMixer': TimeMixer,
-            'TimeKAN': TimeKAN,
             'SOFTS': SOFTS,
-            'SparseTSF': SparseTSF,
-            'WPMixer': WPMixer,
-            'TimeXer': TimeXer,
-            'TSMixer': TSMixer,
-            'FiLM': FiLM,
             'LightTS': LightTS,
-            'MICN': MICN,
-            'TiDE': TiDE,
-            'SCINet': SCINet,
             'Nonstationary_Transformer': Nonstationary_Transformer,
             'Leddam': Leddam,
-            'CATS': CATS,
-            'SegRNN': SegRNN,
-            'Informer': Informer,
-            'MambaSimple': MambaSimple,
         }
         if args.model == 'Mamba':
             print('Please make sure you have successfully installed mamba_ssm')

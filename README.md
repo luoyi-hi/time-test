@@ -1,6 +1,6 @@
 # TimeLagLoss
 
-Our model implementation and datasets are derived from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library).We conducted over 1,440 experiments using a total of 10 models, 6 loss functions, and 6 datasets.
+Our model implementation and datasets are derived from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library).We conducted over 1,680 experiments using a total of 10 models, 7 loss functions, and 6 datasets.
 
 **Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
@@ -18,7 +18,6 @@ Figure 2 Radar chart comparing the MSE performance of 10 state-of-the-art time
 
 ## 1. Plug-and-Play LagLoss Function
 Below is the implementation of our LagLoss function.
-（代码命名，周期改成lag，代码的命名要合理）
 ```python
 class TimeLagLoss(nn.Module):
     def __init__(self, args):
@@ -32,39 +31,33 @@ class TimeLagLoss(nn.Module):
         return x if lag == 0 else x[:, lag:] - x[:, :-lag]
 
     @staticmethod
-    def _dedup(period, val):
+    def _dedup(lags, val):
         seen, keep = set(), []
-        for i, p in enumerate(period):
+        for i, p in enumerate(lags):
             if p not in seen:
                 seen.add(p); keep.append(i)
         keep = np.asarray(keep, int)
-        return period[keep], val[keep]
+        return lags[keep], val[keep]
 
-    def _topk_periods(self, x):
+    def _topk_lags(self, x):
         spec = torch.abs(torch.fft.rfft(x, dim=1)).mean(0).mean(-1)
         diff = spec[1:] - spec[:-1]
         _, idx = torch.topk(diff, self.k)
-        periods = x.size(1) // (idx + 1)
-        periods, vals = self._dedup(periods.cpu().numpy(),
+        lags = x.size(1) // (idx + 1)
+        lags, vals = self._dedup(lags.cpu().numpy(),
                                     spec[idx + 1].cpu().numpy())
         weight = vals / vals.sum()
-        return periods, weight
+        return lags, weight
 
     # ----------------------------------------------------------------------
     def forward(self, pred, label, hist):
-        periods, w = self._topk_periods(label)
-        if 2 in periods and 1 not in periods:
-            periods = np.append(periods, 1)
-            w = np.append(w, w[periods == 2])
-            w /= w.sum()
-
+        lags, w = self._topk_lags(label)
         pred_full  = torch.cat([hist, pred],  dim=1)
         label_full = torch.cat([hist, label], dim=1)
-
         lag_loss = sum(
             wi * self._point(self._diff(pred_full, p),
                              self._diff(label_full, p))
-            for p, wi in zip(periods, w)
+            for p, wi in zip(lags, w)
         )
         mean_loss = self._point(pred.mean(1, keepdim=True),
                                 label.mean(1, keepdim=True))
@@ -107,7 +100,6 @@ We have selected ten representative backbone regarding time series forecasting m
 - **Leddam(ICML 2024)**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
 - **TimeMixer(ICLR 2024)**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
 - **DLinear(AAAI 2023)**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
-- **TSMixer(ICLR 2024)**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
 - **LightTS(2023)**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
 
 ### 2.3 Hyper‑parameters  
@@ -126,7 +118,7 @@ For detailed parameter settings, please refer to the script files in the `script
 ### 2.4 Loss Function
 For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
 
-**Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over `α ∈ {0.25, 0.5, 0.75, 1}`, and for PS Loss, over `α ∈ {1, 3, 5, 10}`. For LagLoss, we search over `α ∈ {0, 0.01, 0.05, 0.1, 0.15, 0.2}`, with one exception for PatchTST, where the search range is extended to include `{0.3, 0.5, 1}`.
+**Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over `α ∈ {0.25, 0.5, 0.75, 1}`, and for PS Loss, over `α ∈ {1, 3, 5, 10}`. For LagLoss, we search over `α ∈ {0, 0.01, 0.05, 0.1, 0.15, 0.2}`, with the exception of PatchTST, where the range is extended to `{0.3, 0.5, 1}`, and further expanded to `{0.3, 0.4, 0.5}` for the ETTh2 dataset.
 
 
 
@@ -144,11 +136,63 @@ pip install -r requirements.txt
 
 ### 4.2 Training & Evaluation  
 
-Example scripts (full list in `./scripts/`): (对每个方法弄示例，超参范围标注,cyc那个单独说明)
+Example scripts (full list in `./scripts/`):
 
 ```bash
-# iTransformer on ETTh1, horizon 96
+# Autoformer on ETT datasets
+bash scripts/long_term_forecast/ETT_script/Autoformer.sh
+# Autoformer on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/Autoformer.sh
+# Autoformer on Weather dataset
+bash scripts/long_term_forecast/Weather_script/Autoformer.sh
+# DLinear on ETT datasets
+bash scripts/long_term_forecast/ETT_script/DLinear.sh
+# DLinear on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/DLinear.sh
+# DLinear on Weather dataset
+bash scripts/long_term_forecast/Weather_script/DLinear.sh
+# iTransformer on ETT datasets
 bash scripts/long_term_forecast/ETT_script/iTransformer.sh
+# iTransformer on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/iTransformer.sh
+# iTransformer on Weather dataset
+bash scripts/long_term_forecast/Weather_script/iTransformer.sh
+# Leddam on ETT datasets
+bash scripts/long_term_forecast/ETT_script/Leddam.sh
+# Leddam on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/Leddam.sh
+# Leddam on Weather dataset
+bash scripts/long_term_forecast/Weather_script/Leddam.sh
+# LightTS on ETT datasets
+bash scripts/long_term_forecast/ETT_script/LightTS.sh
+# LightTS on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/LightTS.sh
+# LightTS on Weather dataset
+bash scripts/long_term_forecast/Weather_script/LightTS.sh
+# NSTransformer on ETT datasets
+bash scripts/long_term_forecast/ETT_script/Nonstationary_Transformer.sh
+# NSTransformer on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/Nonstationary_Transformer.sh
+# NSTransformer on Weather dataset
+bash scripts/long_term_forecast/Weather_script/Nonstationary_Transformer.sh
+# PatchTST on ETT datasets
+bash scripts/long_term_forecast/ETT_script/PatchTST.sh
+# PatchTST on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/PatchTST.sh
+# PatchTST on Weather dataset
+bash scripts/long_term_forecast/Weather_script/PatchTST.sh
+# SOFTS on ETT datasets
+bash scripts/long_term_forecast/ETT_script/SOFTS.sh
+# SOFTS on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/SOFTS.sh
+# SOFTS on Weather dataset
+bash scripts/long_term_forecast/Weather_script/SOFTS.sh
+# TimeMixer on ETT datasets
+bash scripts/long_term_forecast/ETT_script/TimeMixer.sh
+# TimeMixer on Electricity dataset
+bash scripts/long_term_forecast/ECL_script/TimeMixer.sh
+# TimeMixer on Weather dataset
+bash scripts/long_term_forecast/Weather_script/TimeMixer.sh
 ```
 
 ---

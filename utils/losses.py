@@ -29,76 +29,47 @@ import torch.nn.functional as F
 
 class TimeLagLoss(nn.Module):
     def __init__(self, args):
-        super(TimeLagLoss, self).__init__()
-        self.k = args.top_k
-        self.loss = nn.L1Loss()
-        self.alpha = args.alpha
+        super().__init__()
+        self.k = args.top_k              # dominant lags
+        self.alpha = args.alpha          # mean‑error weight
+        self._point = nn.L1Loss()
 
-    def diff(self, x, len):
-        if len == 0:
-            return x
-        return x[:, len:] - x[:, :-len]
+    # ----------------------------------------------------------------------
+    def _diff(self, x, lag):
+        return x if lag == 0 else x[:, lag:] - x[:, :-lag]
 
     @staticmethod
-    def dedup_period(period: np.ndarray,
-                     values: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        seen = set()
-        keep_idx = []
-        for i, p in enumerate(period):
+    def _dedup(lags, val):
+        seen, keep = set(), []
+        for i, p in enumerate(lags):
             if p not in seen:
-                seen.add(p)
-                keep_idx.append(i)
+                seen.add(p); keep.append(i)
+        keep = np.asarray(keep, int)
+        return lags[keep], val[keep]
 
-        keep_idx = np.asarray(keep_idx, dtype=int)
-        return period[keep_idx], values[keep_idx]
+    def _topk_lags(self, x):
+        spec = torch.abs(torch.fft.rfft(x, dim=1)).mean(0).mean(-1)
+        diff = spec[1:] - spec[:-1]
+        _, idx = torch.topk(diff, self.k)
+        lags = x.size(1) // (idx + 1)
+        lags, vals = self._dedup(lags.cpu().numpy(),
+                                    spec[idx + 1].cpu().numpy())
+        weight = vals / vals.sum()
+        return lags, weight
 
-    def FFT_for_Period(self, x, k=2):
-        xf = t.fft.rfft(x, dim=1)
-        frequency_list = abs(xf).mean(0).mean(-1)
-        frequency_diff_list = frequency_list[1:] - frequency_list[:-1]
-
-        all_top_indices, all_top_values = [], []
-
-        _, top_list = t.topk(t.tensor(frequency_diff_list), k)
-        all_top_indices.append(top_list.detach().cpu().numpy() + 1)
-        all_top_values.append(frequency_list[top_list.detach().cpu().numpy() + 1])
-
-        def safe_numpy(x):
-            if isinstance(x, torch.Tensor):
-                return x.detach().cpu().numpy()
-            return x
-
-        all_top_indices = [safe_numpy(idx) for idx in all_top_indices]
-        all_top_values = [safe_numpy(val) for val in all_top_values]
-
-        top_list_flat = np.concatenate(all_top_indices)
-        all_top_values = np.concatenate(all_top_values)
-
-        period = x.shape[1] // top_list_flat
-
-        period, all_top_values = self.dedup_period(period, all_top_values)
-        return period, all_top_values
-
-    def forward(self, pred, label, input):
-        period_label = label
-        period_list, weight = self.FFT_for_Period(period_label, self.k)
-        for i in range(len(weight)):
-            if period_list[i] == 2:
-                period_list = np.append(period_list, 1)
-                weight = np.append(weight, weight[i])
-        sm = weight.sum()
-        weight /= sm
-        multi_diff = 0
-        pred0 = t.concat((input, pred), dim=1)
-        label0 = t.concat((input, label), dim=1)
-        for i in range(len(period_list)):
-            w = weight[i]
-            p_d = self.diff(pred0, period_list[i])
-            l_d = self.diff(label0, period_list[i])
-            multi_diff += self.loss(p_d, l_d) * w
-        multi_diff = multi_diff + self.loss(pred.mean(dim=1, keepdim=True),
-                                         label.mean(dim=1, keepdim=True)) * self.alpha
-        return multi_diff
+    # ----------------------------------------------------------------------
+    def forward(self, pred, label, hist):
+        lags, w = self._topk_lags(label)
+        pred_full  = torch.cat([hist, pred],  dim=1)
+        label_full = torch.cat([hist, label], dim=1)
+        lag_loss = sum(
+            wi * self._point(self._diff(pred_full, p),
+                             self._diff(label_full, p))
+            for p, wi in zip(lags, w)
+        )
+        mean_loss = self._point(pred.mean(1, keepdim=True),
+                                label.mean(1, keepdim=True))
+        return lag_loss + self.alpha * mean_loss
 
 class ps_loss(nn.Module):
     def __init__(self, args, model):
