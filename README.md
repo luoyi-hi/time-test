@@ -12,12 +12,12 @@ The workflow of time lag loss is shown as Figure 1, primarily involving differen
 ![Figure 2](./src/figure2.png)
 <p align="center"><b>Figure&nbsp;2</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
 
-Figure 2 Radar chart comparing the MSE performance of 10 state-of-the-art time series forecasting models across 7 different loss functions. Each line represents a distinct loss function (e.g., MSE, MAE, TILDE-Q, etc.), including our proposed LagLoss (in red). The chart shows that models guided by LagLoss consistently achieve lower MSE values across the majority of models
+Figure 2 Radar chart comparing the MSE performance of 10 state-of-the-art time series forecasting models across 7 different loss functions. Each line represents a distinct loss function (e.g., MSE, MAE, TILDE-Q, etc.), including our proposed LagLoss (in red). **The chart shows that models guided by LagLoss consistently achieve lower MSE values across the majority of models**
 
 ---
 
 ## 1. Plug-and-Play LagLoss Function
-
+Below is the implementation of our LagLoss function.
 （代码命名，周期改成lag，代码的命名要合理）
 ```python
 class TimeLagLoss(nn.Module):
