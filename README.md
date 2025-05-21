@@ -5,22 +5,20 @@ Our model implementation and datasets are derived from the [Time Series Library 
 **Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
 ![Figure 1](./src/figure1.png)
-<p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss. For the groundtruth side, lag selection is performed first, and the lag candidates are shared with the prediction side. Then, lag-specific differences are calculated separately on both the groundtruth and prediction sides. Finally, the loss is computed by combining the results from both sides.</p>
+<p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss.</p>
 
 The workflow of time lag loss is shown as Figure 1, primarily involving differencing sequences of ground-truth and prediction, calculating the mean regularization term, selecting lag candidates, and determining lag-specific differences.
 
 ![Figure 2](./src/figure2.png)
-
-
 <p align="center"><b>Figure&nbsp;2</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
 
 Figure 2 Radar chart comparing the MSE performance of 10 state-of-the-art time series forecasting models across 7 different loss functions. Each line represents a distinct loss function (e.g., MSE, MAE, TILDE-Q, etc.), including our proposed LagLoss (in red). The chart shows that models guided by LagLoss consistently achieve lower MSE values across the majority of models
 
 ---
 
-## 1. Plug‑and‑Play PyTorch Implementation
+## 1. Plug-and-Play LagLoss Function
 
-（代码命名，周期改成lag，代码的命名合理，提前到dataset）
+（代码命名，周期改成lag，代码的命名要合理）
 ```python
 class TimeLagLoss(nn.Module):
     def __init__(self, args):
@@ -77,14 +75,12 @@ class TimeLagLoss(nn.Module):
 
 ## 2. Experimental Setting
 
-(数据集包在实验设置)
-
 ### 2.1 Datasets
 
 #### 2.1.1 Sources  
 
-（数据介绍来源于那个代码库）
-Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`.
+Our data is sourced from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library) and has been placed in the `./dataset/` directory.
+
 we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
 - **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
@@ -96,38 +92,34 @@ we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, 
 Dataset statistics are summarised in **Table&nbsp;1**.
 
 <p align="center"><b>Table&nbsp;1</b> Statistics of datasets.</p>
-<p align="center">
-  <img src="./src/table1.png" width="800">
-</p>
+![Table 1](./src/table1.png)
 
 ### 2.2 Backbone Models  
 
 We have selected ten representative backbone regarding time series forecasting models, encompassing diverse design principles and perspectives:
-（标记发表地方和时间）
-- **iTransformer**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
-- **PatchTST**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
-- **NSTransformer**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
-- **Autoformer**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
-- **SOFTS**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
-- **Leddam**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
-- **TimeMixer**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
-- **DLinear**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
-- **TSMixer**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
-- **LightTS**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
+
+- **iTransformer(ICLR 2024)**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
+- **PatchTST(ICLR 2023)**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
+- **NSTransformer(NeurIPS 2022)**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
+- **Autoformer(NeurIPS 2021)**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
+- **SOFTS(NeurIPS 2024)**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
+- **Leddam(ICML 2024)**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
+- **TimeMixer(ICLR 2024)**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
+- **DLinear(AAAI 2023)**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
+- **TSMixer(ICLR 2024)**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
+- **LightTS(2023)**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
 
 ### 2.3 Hyper‑parameters  
 
-Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
-（提一下脚本文件夹，参数在里面了）
+Table 2 presents the hyperparameters (batch size, learning rate, number of epochs, model dimensions, feed-forward dimensions, and number of encoder layers) used for 10 time series forecasting models across all datasets, showing dataset- and model-specific configurations for optimization. In particular, **ETT*** refers to the four subsets: ETTh1, ETTh2, ETTm1, and ETTm2.  
+For detailed parameter settings, please refer to the script files in the `scripts` folder.
+
+
 
 <p align="center"><b>Table&nbsp;2</b> Hyperparameter configuration.</p>
-<p align="center">
-  <img src="./src/table2.png" width="800">
-</p>
+![Table 2](./src/table2.png)
+![Table 22](./src/table22.png)
 
-<p align="center">
-  <img src="./src/table22.png" width="800">
-</p>
 
 ### 2.4 Loss Function
 For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign, and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
