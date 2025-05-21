@@ -8,21 +8,22 @@
 </p>
 
 
-**Figure g**：Comparison of model performance (Metric: MSE) with different loss guides.
+**Figure (g)**：Comparison of model performance (Metric: MSE) with different loss guides.
 
 ---
 
 
-## 数据集来源
+## 1. 数据集介绍
 
-| 数据集        | 原始仓库                                                            | 下载链接                | 预处理脚本                       |
-| :------------ | :------------------------------------------------------------------ | :---------------------- | :------------------------------- |
-| ETTh1 / ETTh2 | [Time-Series-Library](https://github.com/thuml/Time-Series-Library) | Google Drive / 百度网盘 | `scripts/data_preprocess/ett.sh` |
-| ETTm1 / ETTm2 | 同上                                                                | 同上                    | 同上                             |
-| Weather       | 同上                                                                | 同上                    | 同上                             |
-| Electricity   | 同上                                                                | 同上                    | 同上                             |
+### 2.1 数据集来源
+我们的数据集来源于该[github仓库]([https:](https://github.com/luoyi-hi/time-test))发布的数据集
 
-> **说明**：我们直接复用了 **TSLib** 提供的清洗后 `.csv` / `.ts` 文件，统一放置在 `./dataset/` 目录。若需自行预处理，可运行对应脚本。
+### 2.2数据集统计信息
+Dataset statistics are summarized in Table 1.
+**Table 1: Dataset statistics**
+<p align="center">
+  <img src="./src/table1.png" width="400">
+</p>
 
 ---
 
