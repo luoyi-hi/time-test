@@ -15,7 +15,7 @@
 
 ### 1.1 Sources  
 
-All six datasets are taken from the public repository **[Time-Test](https://github.com/luoyi-hi/time-test)**.
+Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`..
 we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
 - **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
@@ -30,10 +30,6 @@ Dataset statistics are summarised in **Table&nbsp;1**.
   <img src="./src/table1.png" width="600">
 </p>
 
-
-### 1.3 Preparation  
-
-Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`.
 
 ---
 
