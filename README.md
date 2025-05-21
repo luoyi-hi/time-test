@@ -3,11 +3,11 @@
 **Time Lag Loss (LagLoss)** is a novel, plug-and-play objective for time-series forecasting that explicitly aligns the **autocorrelation structure** of predictions with that of the ground-truth signal. By penalising errors not only at each time step but also across multiple temporal lags, LagLoss improves long-range dependency modelling and boosts forecasting accuracy on a wide range of backbones.
 
 <p align="center">
-  <img src="./src/g.png" width="600">
+  <img src="./src/figure1.png" width="600">
 </p>
 
 
-<p align="center"><b>Fig.&nbsp;1</b> MSE comparison of different loss functions (lower is better).</p>
+<p align="center"><b>Fig.&nbsp;1</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
 
 ---
 
