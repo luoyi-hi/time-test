@@ -134,8 +134,6 @@ For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, 
 
 ## 4. Result Reproduction
 
-Code is based on Time Series Library (TSLib), and the datasets are also obtained from this library: https://github.com/thuml/Time-Series-Library
-
 ### 4.1 Environment  
 
 ```bash
