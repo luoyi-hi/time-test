@@ -7,7 +7,7 @@
 </p>
 
 
-<p align="center"><b>Fig.&nbsp;1</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
+<p align="center"><b>Figure&nbsp;1</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
 
 ---
 
@@ -26,7 +26,7 @@ we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, 
 
 Dataset statistics are summarised in **Table&nbsp;1**.
 
-<p align="center"><b>Table.&nbsp;1</b> Statistics of datasets.</p>
+<p align="center"><b>Table&nbsp;1</b> Statistics of datasets.</p>
 <p align="center">
   <img src="./src/table1.png" width="800">
 </p>
@@ -55,8 +55,7 @@ We have selected ten representative backbone regarding time series forecasting m
 
 Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
 
-##### Table 2: Hyperparameter configuration.
-
+<p align="center"><b>Table&nbsp;2</b> Hyperparameter configuration.</p>
 <p align="center">
   <img src="./src/table2.png" width="800">
 </p>
