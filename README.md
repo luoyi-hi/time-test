@@ -1,79 +1,27 @@
 # TimeLagLoss
 
+Our model implementation and datasets are derived from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library).We conducted over 1,440 experiments using a total of 10 models, 6 loss functions, and 6 datasets.
+
+![Figure 1](./src/figure1.png)
+<p align="center"><b>Figure&nbsp;2</b> The workflow of LagLoss. For the groundtruth side, lag selection is performed first, and the lag candidates are shared with the prediction side. Then, lag-specific differences are calculated separately on both the groundtruth and prediction sides. Finally, the loss is computed by combining the results from both sides.</p>
+
 **Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
-<p align="center">
-  <img src="./src/figure1.png" width="600">
-</p>
+
+
+（先放模型图）
+（开头说明基于什么库实现的代码，介绍多少个模型，多少个损失函数，简单描述一下下图）
+
+![Figure 2](./src/figure2.png)
 
 
 <p align="center"><b>Figure&nbsp;1</b> Comparison of model performance (Metric: MSE) with different loss guides.</p>
 
 ---
 
-## 1. Datasets
+## 1. Plug‑and‑Play PyTorch Implementation
 
-### 1.1 Sources  
-
-Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`.
-we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
-
-- **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
-- **Weather**: This dataset captures 21 different meteorological indicators across Germany, recorded every 10 minutes throughout the year 2020. Key indicators include temperature, visibility, and other parameters, providing a comprehensive view of weather dynamics.
-- **Electricity**: This dataset contains hourly electricity consumption records for 321 clients, measured in kilowatt-hours (kWh). Sourced from the UCI Machine Learning Repository, it covers the period from 2012 to 2014, offering valuable insights into consumer electricity usage patterns.
-
-### 1.2 Statistics  
-
-Dataset statistics are summarised in **Table&nbsp;1**.
-
-<p align="center"><b>Table&nbsp;1</b> Statistics of datasets.</p>
-<p align="center">
-  <img src="./src/table1.png" width="800">
-</p>
-
-
----
-
-## 2. Experimental Setting
-
-### 2.1 Backbone Models  
-
-We have selected ten representative backbone regarding time series forecasting models, encompassing diverse design principles and perspectives:
-
-- **iTransformer**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
-- **PatchTST**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
-- **NSTransformer**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
-- **Autoformer**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
-- **SOFTS**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
-- **Leddam**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
-- **TimeMixer**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
-- **DLinear**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
-- **TSMixer**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
-- **LightTS**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
-
-### 2.2 Hyper‑parameters  
-
-Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
-
-<p align="center"><b>Table&nbsp;2</b> Hyperparameter configuration.</p>
-<p align="center">
-  <img src="./src/table2.png" width="800">
-</p>
-
-<p align="center">
-  <img src="./src/table22.png" width="800">
-</p>
-
-### 2.3 Loss Function
-For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign, and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
-
-**Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over $\alpha \in \{0.25, 0.5, 0.75, 1\}$, and for PS Loss, over $\alpha \in \{1, 3, 5, 10\}$. For LagLoss, we search over $\alpha \in \{0, 0.01, 0.05, 0.1, 0.15, 0.2\}$, with one exception for PatchTST, where the search range is extended to include $\{0.3, 0.5, 1\}$.
-
-
----
-
-## 3. Plug‑and‑Play PyTorch Implementation
-
+（代码命名，周期改成lag，代码的命名合理，提前到dataset）
 ```python
 class TimeLagLoss(nn.Module):
     def __init__(self, args):
@@ -128,6 +76,68 @@ class TimeLagLoss(nn.Module):
 
 ---
 
+## 2. Experimental Setting
+
+(数据集包在实验设置)
+
+### 2.1 Datasets
+
+#### 2.1.1 Sources  
+
+（数据介绍来源于那个代码库）
+Pre-processed data can be downloaded from **[Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2)** or **[Baidu Netdisk](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy)** and placed in `./dataset/`.
+we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
+
+- **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
+- **Weather**: This dataset captures 21 different meteorological indicators across Germany, recorded every 10 minutes throughout the year 2020. Key indicators include temperature, visibility, and other parameters, providing a comprehensive view of weather dynamics.
+- **Electricity**: This dataset contains hourly electricity consumption records for 321 clients, measured in kilowatt-hours (kWh). Sourced from the UCI Machine Learning Repository, it covers the period from 2012 to 2014, offering valuable insights into consumer electricity usage patterns.
+
+#### 2.2.2 Statistics  
+
+Dataset statistics are summarised in **Table&nbsp;1**.
+
+<p align="center"><b>Table&nbsp;1</b> Statistics of datasets.</p>
+<p align="center">
+  <img src="./src/table1.png" width="800">
+</p>
+
+### 2.2 Backbone Models  
+
+We have selected ten representative backbone regarding time series forecasting models, encompassing diverse design principles and perspectives:
+（标记发表地方和时间）
+- **iTransformer**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
+- **PatchTST**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
+- **NSTransformer**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
+- **Autoformer**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
+- **SOFTS**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
+- **Leddam**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
+- **TimeMixer**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
+- **DLinear**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
+- **TSMixer**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
+- **LightTS**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
+
+### 2.3 Hyper‑parameters  
+
+Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
+（提一下脚本文件夹，参数在里面了）
+
+<p align="center"><b>Table&nbsp;2</b> Hyperparameter configuration.</p>
+<p align="center">
+  <img src="./src/table2.png" width="800">
+</p>
+
+<p align="center">
+  <img src="./src/table22.png" width="800">
+</p>
+
+### 2.4 Loss Function
+For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign, and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
+
+**Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as {96, 192, 336, 720}. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over $\alpha \in \{0.25, 0.5, 0.75, 1\}$, and for PS Loss, over $\alpha \in \{1, 3, 5, 10\}$. For LagLoss, we search over $\alpha \in \{0, 0.01, 0.05, 0.1, 0.15, 0.2\}$, with one exception for PatchTST, where the search range is extended to include $\{0.3, 0.5, 1\}$.
+
+
+---
+
 ## 4. Result Reproduction
 
 Code is based on Time Series Library (TSLib), and the datasets are also obtained from this library: https://github.com/thuml/Time-Series-Library
@@ -142,7 +152,7 @@ pip install -r requirements.txt
 
 ### 4.2 Training & Evaluation  
 
-Example scripts (full list in `./scripts/`):
+Example scripts (full list in `./scripts/`): (对每个方法弄示例，超参范围标注)，前面提一下实验数量，cy那个特例单独说一下
 
 ```bash
 # iTransformer on ETTh1, horizon 96
