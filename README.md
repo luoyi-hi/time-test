@@ -2,173 +2,181 @@
 
 **Time Lag Loss (LagLoss)** is a new loss function for time-series forecasting that makes the model’s predictions respect the same autocorrelation patterns as the ground-truth signal.
 
-
 <p align="center">
-  <img src="./src/g.png" width="400">
+  <img src="./src/g.png" width="600">
 </p>
 
+##### Figure (g)：Comparison of model performance (Metric: MSE) with different loss guides.
 
-**Figure (g)**：Comparison of model performance (Metric: MSE) with different loss guides.
+我们的损失函数代码如下，是一个即插即用的模块：
+
+```python
+class TimeLagLoss(nn.Module):
+    def __init__(self, args):
+        super(TimeLagLoss, self).__init__()
+        self.k = args.top_k
+        self.loss = nn.L1Loss()
+        self.alpha = args.alpha
+
+    def diff(self, x, len):
+        if len == 0:
+            return x
+        return x[:, len:] - x[:, :-len]
+
+    @staticmethod
+    def dedup_period(period: np.ndarray,
+                     values: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        seen = set()
+        keep_idx = []
+        for i, p in enumerate(period):
+            if p not in seen:
+                seen.add(p)
+                keep_idx.append(i)
+
+        keep_idx = np.asarray(keep_idx, dtype=int)
+        return period[keep_idx], values[keep_idx]
+
+    def FFT_for_Period(self, x, k=2):
+        xf = t.fft.rfft(x, dim=1)
+        frequency_list = abs(xf).mean(0).mean(-1)
+        frequency_diff_list = frequency_list[1:] - frequency_list[:-1]
+
+        all_top_indices, all_top_values = [], []
+
+        _, top_list = t.topk(t.tensor(frequency_diff_list), k)
+        all_top_indices.append(top_list.detach().cpu().numpy() + 1)
+        all_top_values.append(frequency_list[top_list.detach().cpu().numpy() + 1])
+
+        def safe_numpy(x):
+            if isinstance(x, torch.Tensor):
+                return x.detach().cpu().numpy()
+            return x
+
+        all_top_indices = [safe_numpy(idx) for idx in all_top_indices]
+        all_top_values = [safe_numpy(val) for val in all_top_values]
+
+        top_list_flat = np.concatenate(all_top_indices)
+        all_top_values = np.concatenate(all_top_values)
+
+        period = x.shape[1] // top_list_flat
+
+        period, all_top_values = self.dedup_period(period, all_top_values)
+        return period, all_top_values
+
+    def forward(self, pred, label, input):
+        period_label = label
+        period_list, weight = self.FFT_for_Period(period_label, self.k)
+        for i in range(len(weight)):
+            if period_list[i] == 2:
+                period_list = np.append(period_list, 1)
+                weight = np.append(weight, weight[i])
+        sm = weight.sum()
+        weight /= sm
+        multi_diff = 0
+        pred0 = t.concat((input, pred), dim=1)
+        label0 = t.concat((input, label), dim=1)
+        for i in range(len(period_list)):
+            w = weight[i]
+            p_d = self.diff(pred0, period_list[i])
+            l_d = self.diff(label0, period_list[i])
+            multi_diff += self.loss(p_d, l_d) * w
+        multi_diff = multi_diff + self.loss(pred.mean(dim=1, keepdim=True),
+                                         label.mean(dim=1, keepdim=True)) * self.alpha
+        return multi_diff
+```
 
 ---
 
 
+
 ## 1. 数据集介绍
 
-### 2.1 数据集来源
-我们的数据集来源于该[github仓库]([https:](https://github.com/luoyi-hi/time-test))发布的数据集
+### 1.1 数据集来源
+我们的数据集来源于该[github仓库]([https:](https://github.com/luoyi-hi/time-test))发布的数据集。we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
-### 2.2数据集统计信息
+- **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
+- **Weather**: This dataset captures 21 different meteorological indicators across Germany, recorded every 10 minutes throughout the year 2020. Key indicators include temperature, visibility, and other parameters, providing a comprehensive view of weather dynamics.
+- **Electricity**: This dataset contains hourly electricity consumption records for 321 clients, measured in kilowatt-hours (kWh). Sourced from the UCI Machine Learning Repository, it covers the period from 2012 to 2014, offering valuable insights into consumer electricity usage patterns.
+
+### 1.2 数据集统计信息
 Dataset statistics are summarized in Table 1.
 ##### Table 1: Dataset statistics
 <p align="center">
   <img src="./src/table1.png" width="600">
 </p>
 
+### 1.3 数据集准备
+You can obtain the well pre-processed datasets from [Google Drive](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2) or [Baidu Drive](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy).  
+Then place the downloaded data in the folder `./dataset`.
 ---
 
-## 实验设置与结果概览
 
-- **实验规模**：共 `6（数据集） × 10（模型） × 4（预测步长） × 7（损失） ≈ 1680` 组实验。<!-- TODO：如有变动请修改 -->
-- **对比模型**：  
-  - Transformer 系：iTransformer、PatchTST、NSTransformer、Autoformer、Informer 等  
-  - 线性 / MLP 系：DLinear、SOFTS、TimeMixer、CycleNet、LightTS、Leddam  
-- **评价指标**：MSE、MAE（越低越好）；所有实验固定随机种子与训练轮数，保持公平。  
 
-> **结果摘要**  
->
-> - 与 MSE 相比，TimeLagLoss 在 **10 / 10** 个模型上平均 **↓ 8.8 % MSE**；在长预测窗 `P = 720` 时提升尤为显著。<!-- TODO：补充真实数字或留空 -->
+## 2. Experimental Setting
+Code is based on Time Series Library (TSLib), and the datasets are also obtained from this library: https://github.com/thuml/Time-Series-Library
+
+### 2.1 Backbone of Forecasting Models
+
+We have selected ten representative backbone regarding time series forecasting models, encompassing diverse design principles and perspectives:
+
+- **iTransformer**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
+- **PatchTST**: Segments time series into subseries-level patches as input tokens to Transformer and shares the same embedding and Transformer weights across all series in each channel.
+- **NSTransformer**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
+- **Autoformer**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
+- **SOFTS**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
+- **Leddam**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
+- **TimeMixer**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
+- **DLinear**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
+- **TSMixer**: A novel architecture designed by stacking MLPs, based on mixing operations along both the time and feature dimensions to extract information efficiently.
+- **LightTS**: Compresses large ensembles into lightweight models while ensuring competitive accuracy. It proposes adaptive ensemble distillation and identifies Pareto optimal settings regarding model accuracy and size.
+
+### 2.2 Hyperparameter Configuration.
+
+Table 2 presents hyperparameters (batch size, learning rate, epochs, model dimensions, feed-forward dimensions, number of encoder layers) across 10 time series forecasting models on all datasets, showing dataset- and model-specific configurations for optimization. Particularly, ETT* includes the four subsets as ETTh1, ETTh2, ETTm1, ETTm2.
+
+##### Table 2: Hyperparameter configuration.
+
+
+
+<p align="center">
+  <img src="./src/table2.png" width="800">
+</p>
+
+<p align="center">
+  <img src="./src/table22.png" width="800">
+</p>
 
 ---
 
-## 如何复现
 
-### 1. 环境安装
+
+## 3. Results Reproduction
+
+### 3.1 Install Python
+
+Install Python 3.10. For convenience, execute the following command.
 
 ```bash
-conda create -n ts_lagloss python=3.10 -y
-conda activate ts_lagloss
 pip install -r requirements.txt
 ```
 
-### 2. 数据准备
+### 3.2 Train and Evaluate Model
 
-1. 从上表下载 **预处理后** 数据，解压至 `./dataset/`  
-2. 若要自行预处理，可执行：
-
-```bash
-bash scripts/data_preprocess/prepare_all.sh
-```
-
-### 3. 训练与评估
-
-本仓库在 `./scripts/` 目录下提供每组实验的可复现脚本。例如：
+We provide experiment scripts for all benchmarks under the folder `./scripts/`.  
+You can reproduce the experiment results with the following commands:
 
 ```bash
-# 以 iTransformer 在 ETTh1 上预测 96 步为例
-bash scripts/long_term_forecast/ETTh1/iTransformer.sh
+# ETT
+bash ./scripts/long_term_forecast/ETT_script/NSTransformer.sh
+bash ./scripts/long_term_forecast/ETT_script/iTransformer.sh
+bash ./scripts/long_term_forecast/ETT_script/Leddam.sh
+...
+
+# ECL
+bash ./scripts/long_term_forecast/ECL_script/NSTransformer.sh
+...
+
+# Weather
+bash ./scripts/long_term_forecast/Weather_script/NSTransformer.sh
+...
 ```
-
-> 运行脚本将把日志与指标保存到 `./logs/`，可直接复现实验结果与雷达图数据。
-
----
-
-## TimeLagLoss 即插即用代码
-
-下方为 **PyTorch** 实现，依赖 `torch.fft`，可直接复制到任意项目中使用：
-
-```python
-import torch
-import torch.nn.functional as F
-from torch.fft import rfft
-
-
-class TimeLagLoss(torch.nn.Module):
-    r"""Plug-and-play TimeLagLoss.
-
-    Args:
-        max_k (int): 参与计算的最大 lag 数 (默认 20)
-        alpha (float): 均值约束权重 (默认 0.05)
-    """
-    def __init__(self, max_k: int = 20, alpha: float = 0.05):
-        super().__init__()
-        self.k = max_k
-        self.alpha = alpha
-
-    @staticmethod
-    def _topk_lags(y, k):
-        """利用 FFT 选取前 k 个显著 lag"""
-        amp = torch.mean(torch.abs(rfft(y, dim=-2)), dim=-1)  # (B,C,F)
-        diff = torch.diff(amp, dim=-1)
-        _, idx = torch.topk(diff, k, dim=-1)                  # (B,C,k)
-        seq_len = y.size(-2)
-        lags = (seq_len // (idx + 1)).clamp(1, seq_len - 1)
-        # 去重并限制数量
-        return lags.unique().tolist()[:k]
-
-    def forward(self, y_hat, y_true):
-        """y_hat, y_true shape: (B, P, C)"""
-        assert y_hat.shape == y_true.shape
-        lags = self._topk_lags(y_true, self.k)
-        w = torch.ones(len(lags), device=y_true.device) / len(lags)
-
-        lag_loss = 0.0
-        for lag, weight in zip(lags, w):
-            diff_pred = y_hat[:, lag:, :] - y_hat[:, :-lag, :]
-            diff_true = y_true[:, lag:, :] - y_true[:, :-lag, :]
-            lag_loss += weight * F.mse_loss(diff_pred, diff_true)
-
-        mean_loss = F.l1_loss(y_hat.mean(dim=1), y_true.mean(dim=1))
-        return lag_loss + self.alpha * mean_loss
-```
-
----
-
-## 附录
-
-### A.&nbsp;数据集介绍 <!-- TODO：补充采样频率、维度、划分等 -->
-
-| 数据集 | 采样频率 | 特征维度 | 训练 / 验证 / 测试 | 预测步长 P           |
-| :----- | :------- | :------- | :----------------- | :------------------- |
-| ETTh1  | 1 hour   | 7        | 12 / 4 / 4 个月    | 96 / 192 / 336 / 720 |
-| …      | …        | …        | …                  | …                    |
-
-### B.&nbsp;基线模型与损失 <!-- TODO：补充模型来源与实现细节 -->
-
-- **Transformer 系**  
-  - **iTransformer** — _ICLR 2024_  
-  - **PatchTST** — _NeurIPS 2023_  
-  - …
-
-- **损失函数**  
-  - MSE、MAE、Huber、Quantile、SmoothL1、TimeLagLoss (本工作) 等
-
-### C.&nbsp;超参数设置表 <!-- TODO：补参数 -->
-
-| 模型          | 数据集 | P    | Batch / LR | 关键超参     |
-| :------------ | :----- | :--- | :--------- | :----------- |
-| NSTransformer | ETTh1  | 96   | 32 / 1e-3  | enc=2, dec=1 |
-| iTransformer  | ECL    | 336  | 16 / 2e-4  | heads=8      |
-| …             | …      | …    | …          | …            |
-
-> **硬件**：全部实验在 1× NVIDIA A100-80GB GPU 上完成。<!-- TODO：或补充训练时长 -->
-
----
-
-## 引用
-
-若本工作对您有帮助，请引用：
-
-```bibtex
-@article{timelagloss_2025,
-  title  = {Learning Deep Time Series Models with TimeLagLoss},
-  author = {<!-- TODO：作者 -->},
-  year   = {2025},
-  journal= {arXiv preprint arXiv:2505.xxxxx}
-}
-```
-
----
-
-**联系我们**：如有问题或更多实验结果，欢迎提交 [Issue](./issues) 或 PR。  
-**许可证**：MIT
