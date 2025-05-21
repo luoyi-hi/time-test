@@ -20,9 +20,9 @@
 
 ### 2.2数据集统计信息
 Dataset statistics are summarized in Table 1.
-**Table 1: Dataset statistics**
+##### Table 1: Dataset statistics
 <p align="center">
-  <img src="./src/table1.png" width="400">
+  <img src="./src/table1.png" width="600">
 </p>
 
 ---
