@@ -27,7 +27,7 @@ we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, 
 Dataset statistics are summarised in **Table&nbsp;1**.
 
 <p align="center">
-  <img src="./src/table1.png" width="600">
+  <img src="./src/table1.png" width="800">
 </p>
 
 
