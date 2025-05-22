@@ -193,7 +193,7 @@ bash scripts/long_term_forecast/ETT_script/TimeMixer.sh
 bash scripts/long_term_forecast/ECL_script/TimeMixer.sh
 # TimeMixer on Weather dataset
 bash scripts/long_term_forecast/Weather_script/TimeMixer.sh
+# For detailed instructions on using CycleNet with TimeLagLoss, please refer to `./CycleNet-LagLoss/Readme.md`.
 ```
-For detailed instructions on using CycleNet with TimeLagLoss, please refer to `./CycleNet-LagLoss/Readme.md`.
 ---
 
