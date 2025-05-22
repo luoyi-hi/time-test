@@ -105,7 +105,7 @@ We have selected ten representative backbone regarding time series forecasting m
 ### 2.3 Hyper‑parameters  
 
 Table 2 presents the hyperparameters (batch size, learning rate, number of epochs, model dimensions, feed-forward dimensions, and number of encoder layers) used for 10 time series forecasting models across all datasets, showing dataset- and model-specific configurations for optimization. In particular, **ETT*** refers to the four subsets: ETTh1, ETTh2, ETTm1, and ETTm2.  
-For detailed parameter settings, please refer to the script files in the `scripts` folder.
+For detailed parameter settings, please refer to the script files in the `./scripts/` folder.
 
 
 
@@ -116,7 +116,7 @@ For detailed parameter settings, please refer to the script files in the `script
 
 
 ### 2.4 Loss Function
-For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign and PSLoss. The implementation for each loss can be found in `utils\losses.py`.
+For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, FreDF, TDTAlign and PSLoss. The implementation for each loss can be found in `./utils/losses.py`.
 
 **Implementation Details.** All experiments in this study were implemented within the Time-Series-Library framework. For all models, the look-back length was consistently set to 96. For each dataset, the prediction horizons were configured as `{96, 192, 336, 720}`. To maintain fairness, experiments using different loss functions on the same model were conducted with uniform hyperparameters. For loss functions that require combination with MSE, we follow the settings provided in their original papers. Specifically, for FreDF, we search over `α ∈ {0.25, 0.5, 0.75, 1}`, and for PS Loss, over `α ∈ {1, 3, 5, 10}`. For LagLoss, we search over `α ∈ {0, 0.01, 0.05, 0.1, 0.15, 0.2}`, with the exception of PatchTST, where the range is extended to `{0.3, 0.5, 1}`, and further expanded to `{0.3, 0.4, 0.5}` for the ETTh2 dataset.
 
