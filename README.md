@@ -74,13 +74,13 @@ class TimeLagLoss(nn.Module):
 
 Our data is sourced from the [Time Series Library (TSLib)](https://github.com/thuml/Time-Series-Library) and has been placed in the `./dataset/` directory.
 
-we selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
+We selected six real-world time series datasets, including ETTh1, ETTh2, ETTm1, ETTm2 which are the subsets of ETT corpus, Weather and Electricity.
 
 - **ETT (Electricity Transformer Temperature)**: This dataset includes temperature and power load data from transformers in two regions of China, covering the years 2016 to 2018. The dataset offers two granularities: ETTh (hourly) and ETTm (15-minute intervals).
 - **Weather**: This dataset captures 21 different meteorological indicators across Germany, recorded every 10 minutes throughout the year 2020. Key indicators include temperature, visibility, and other parameters, providing a comprehensive view of weather dynamics.
 - **Electricity**: This dataset contains hourly electricity consumption records for 321 clients, measured in kilowatt-hours (kWh). Sourced from the UCI Machine Learning Repository, it covers the period from 2012 to 2014, offering valuable insights into consumer electricity usage patterns.
 
-#### 2.2.2 Statistics  
+#### 2.1.2 Statistics  
 
 Dataset statistics are summarised in **Table&nbsp;1**.
 
@@ -124,9 +124,9 @@ For the baselines, we selected six loss functions, including MSE, MAE, TILDE-Q, 
 
 ---
 
-## 4. Result Reproduction
+## 3. Result Reproduction
 
-### 4.1 Environment  
+### 3.1 Environment  
 
 ```bash
 conda create -n ts_lagloss python=3.10 -y
@@ -134,7 +134,7 @@ conda activate ts_lagloss
 pip install -r requirements.txt
 ```
 
-### 4.2 Training & Evaluation  
+### 3.2 Training & Evaluation  
 
 Example scripts (full list in `./scripts/`):
 
