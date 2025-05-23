@@ -4,9 +4,11 @@
 
 ![Figure 1](./src/figure1.png)
 
-<img src="./src/figure1.png” alt="描述文字” style="width:200px; height:100px;”>
+<img src="./src/figure1.png" alt="描述文字" style="width:200px; height:100px;">
 
-<img src="./src/figure1.png" alt="描述文字” width="200” height=”100”>
+
+<img src="./src/figure1.png" alt="描述文字" width="200" height="100">
+
 
 <p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss.</p>
 
