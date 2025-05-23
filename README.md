@@ -2,11 +2,11 @@
 
 **Time Lag Loss (LagLoss)** is a novel objective function that encourages predictions to follow the same autocorrelation patterns as the ground truth across multiple lag intervals. It does so by computing lag-specific deviations between the predicted and actual values, using these discrepancies to guide the model's learning process and better capture temporal dependencies.
 
+The workflow of time lag loss is shown in Figure 1, primarily involving differencing sequences of ground truth and prediction, calculating the mean regularization term, selecting lag candidates, and determining lag-specific differences.
+
 ![Figure 1](./src/figure1.png)
 
 <p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss.</p>
-
-The workflow of time lag loss is shown in Figure 1, primarily involving differencing sequences of ground truth and prediction, calculating the mean regularization term, selecting lag candidates, and determining lag-specific differences.
 
 ---
 
