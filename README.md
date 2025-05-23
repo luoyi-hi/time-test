@@ -4,6 +4,10 @@
 
 ![Figure 1](./src/figure1.png)
 
+<img src="./src/figure1.png” alt="描述文字” style="width:200px; height:100px;”>
+
+<img src="./src/figure1.png" alt="描述文字” width="200” height=”100”>
+
 <p align="center"><b>Figure&nbsp;1</b> The workflow of LagLoss.</p>
 
 The workflow of time lag loss is shown in Figure 1, primarily involving differencing sequences of ground truth and prediction, calculating the mean regularization term, selecting lag candidates, and determining lag-specific differences.
