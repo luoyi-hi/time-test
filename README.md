@@ -100,9 +100,10 @@ We have selected ten representative backbones regarding time series forecasting 
 
 - **iTransformer(ICLR, 2024)**: Models different variables separately using attention mechanisms and feedforward networks to capture correlations between variables and dependencies within each variable.
 - **PatchTST(ICLR, 2023)**: Segments time series into subseries-level patches as input tokens to the Transformer and shares the same embedding and Transformer weights across all series in each channel.
-- **NSTransformer(NeurIPS, 2022)**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
+- **NSTransformer(Stationary)(NeurIPS, 2022)**: Consists of Series Stationarization and De-stationary Attention modules to improve the predictive performance of Transformers and their variants on non-stationary time series data.
 - **Autoformer(NeurIPS, 2021)**: Based on a deep decomposition architecture and self-correlation mechanism, improving long-term prediction efficiency through progressive decomposition and sequence-level connections.
 - **SOFTS(NeurIPS, 2024)**: An efficient MLP-based model with a novel STAR module. Unlike traditional distributed structures, STAR uses a centralized strategy to improve efficiency and reduce reliance on channel quality.
+- **CycleNet (NeurIPS, 2024)**: Introduces Residual Cycle Forecasting (RCF), a plug-and-play block that first learns recurrent cycles to explicitly model periodic patterns and then forecasts the residual component with a lightweight Linear layer or shallow MLP.
 - **Leddam(ICML, 2024)**: Introduces a learnable decomposition strategy to capture dynamic trend information more reasonably and a dual attention module to capture inter-series dependencies and intra-series variations simultaneously.
 - **TimeMixer(ICLR, 2024)**: A fully MLP-based architecture with PDM and FMM blocks to fully utilize disentangled multiscale series in both past extraction and future prediction phases.
 - **DLinear(AAAI, 2023)**: Decomposes the time series into trend and residual sequences, and models these two sequences separately using two single-layer linear networks for prediction.
